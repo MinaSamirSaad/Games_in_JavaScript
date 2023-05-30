@@ -1,34 +1,35 @@
-import SpriteSheet from './spriteSheet.js';
-import {loadImage, loadLevel} from "./loaders.js";
-
-function drawBackground(background, context, sprites) {
-  background.ranges.forEach(([x1, x2, y1, y2]) => {
-      for (let x = x1; x < x2; ++x) {
-          for (let y = y1; y < y2; ++y) {
-              sprites.drawTile(background.tile, context, x, y);
-          }
-      }
-  });
-}
-
+import Compositor from "./Compositor.js";
+import { loadLevel } from "./loaders.js";
+import { loadMarioSprite, loadBackgroundSprites } from "./sprites.js";
+import { createBackgroundLayer } from "./layers.js";
 
 // using canvas to draw the game object
 const canvas = document.getElementById("screen");
 const context = canvas.getContext("2d");
-context.fillRect(0, 0, 50, 50);
 
-loadImage("/img/tiles.png")
-  .then((image) => {
-    const sprites = new SpriteSheet(image, 16, 16);
-    sprites.define("ground", 0, 0);
-    sprites.define("sky", 3, 23);
+function createSpriteLayer(sprite, pos) {
+  return function drawSpriteLayer(context) {
+      sprite.draw('idle', context, pos.x, pos.y);
+  };
+}
 
-
-    loadLevel('1-1')
-    .then((level) => {
-      level.backgrounds.forEach((background)=>{
-      drawBackground(background,context,sprites);
-      })
-    })
-
-  })
+Promise.all([
+  loadMarioSprite(),
+  loadBackgroundSprites(),
+  loadLevel("1-1"),
+]).then(([marioSprite, backgroundSprites, level]) => {
+  const comp = new Compositor();
+  comp.layers.push(createBackgroundLayer(level.backgrounds, backgroundSprites));
+  const pos = {
+    x: 64,
+    y: 64,
+  };
+  comp.layers.push(createSpriteLayer(marioSprite, pos));
+  function update() {
+    comp.draw(context);
+    pos.x += 2;
+    pos.y += 2;
+    requestAnimationFrame(update);
+  }
+  update();
+});

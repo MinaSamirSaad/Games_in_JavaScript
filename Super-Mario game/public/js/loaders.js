@@ -8,8 +8,9 @@
         image.src = url;
     });
 }
-
+// async function to get levels data from json file
 export async function loadLevel(name) {
     const res = await fetch(`/levels/${name}.json`);
-    return await res.json();
+    const json = await res.json();
+    return json;
 }
