@@ -9,10 +9,10 @@ export function setupKeyboard(entity) {
           }
         });
         input.addMapping('ArrowRight', (keyState) => {
-          entity.go.dir = keyState;
+          entity.go.dir += keyState ? 1 : -1;
         });
         input.addMapping('ArrowLeft', (keyState) => {
-          entity.go.dir = -keyState;
+          entity.go.dir += keyState? -1 : 1;
         });
         return input;
 }

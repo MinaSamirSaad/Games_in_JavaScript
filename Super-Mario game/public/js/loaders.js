@@ -1,6 +1,7 @@
 import Level from "./Level.js";
 import { createBackgroundLayer, createSpriteLayer } from "./layers.js";
 import SpriteSheet from "./spriteSheet.js";
+import { createAnim } from './anim.js';
 // using a Promise, the code encapsulates the image loading operation and provides a way to handle the result (the loaded image) when it becomes available
 export function loadImage(url) {
   return new Promise((resolve) => {
@@ -42,7 +43,7 @@ function createTiles(level, backgrounds) {
     });
   });
 }
-function loadSpriteSheet(name) {
+export function loadSpriteSheet(name) {
   return loadJSON(`/sprites/${name}.json`)
     .then((sheetSpec) =>
       Promise.all([sheetSpec, loadImage(sheetSpec.imageURL)])
@@ -61,6 +62,12 @@ function loadSpriteSheet(name) {
       if (sheetSpec.frames) {
         sheetSpec.frames.forEach((frameSpec) => {
           sprites.define(frameSpec.name, ...frameSpec.rect);
+        });
+      }
+      if (sheetSpec.animations) {
+        sheetSpec.animations.forEach((animSpec) => {
+          const animation = createAnim(animSpec.frames, animSpec.frameLen);
+          sprites.defineAnim(animSpec.name, animation);
         });
       }
       return sprites;
